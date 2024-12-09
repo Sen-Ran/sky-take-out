@@ -101,5 +101,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new PageResult(total,records);
     }
 
+    /**
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        //update employ set status = ? where id=?
+        //传统写法
+//        Employee employee = new Employee();
+//        employee.setStatus(status);
+//        employee.setId(id);
+
+        //实体类上添加了@Builder注解后,可以直接构建
+        Employee employee = Employee.builder()
+                .status(status)
+                .id(id)
+                .build();
+
+
+        employeeMapper.update(employee);
+    }
+
 
 }
