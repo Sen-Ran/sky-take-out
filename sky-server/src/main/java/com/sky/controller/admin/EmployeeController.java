@@ -17,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,11 +110,50 @@ public class EmployeeController {
      * @return
      */
     @ApiOperation("启用禁用员工账号")
-     @PostMapping("/status/{status}")
-    public Result startOrStop(@PathVariable  Integer status,Long id){
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id, HttpServletRequest request) {
+        // 获取完整的请求 URL
+        String requestUrl = request.getRequestURL().toString();
+
+        // 如果有查询参数，也可以获取
+        String queryString = request.getQueryString();
+        if (queryString != null) {
+            requestUrl += "?" + queryString;
+        }
+
+        try {
+            // 读取请求体内容
+            StringBuilder body = new StringBuilder();
+            String line;
+            BufferedReader reader = request.getReader();
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+            log.info("请求体内容: {}", body.toString());
+        } catch (IOException e) {
+            log.error("读取请求体失败", e);
+        }
+        log.info("请求的完整URL: {}", requestUrl);
         log.info("启用禁用员工账号:{},{}", status, id);
+
         employeeService.startOrStop(status, id);
         return Result.success();
-
     }
+
+
+    @GetMapping("/{id}")
+    @ApiOperation("根据id查询员工信息")
+    public Result<Employee> getById(@PathVariable  Long id){
+        Employee employee=employeeService.getById(id);
+        return Result.success(employee);
+    }
+
+    @PutMapping
+    @ApiOperation("编辑员工信息")
+    public Result update(@RequestBody EmployeeDTO employeeDTO){
+        log.info("编辑员工信息:{}",employeeDTO);
+        employeeService.update(employeeDTO);
+        return Result.success();
+    }
+
 }
